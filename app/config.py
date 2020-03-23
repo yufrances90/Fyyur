@@ -8,6 +8,4 @@ DEBUG = True
 
 # Connect to the database
 
-
-# TODO IMPLEMENT DATABASE URL
 SQLALCHEMY_DATABASE_URI = 'postgres://beijiayu@localhost:5432/fyyurdb'
