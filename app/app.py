@@ -102,9 +102,32 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data = Venue.query.all()
+
+  res = db.session.query( \
+    Venue.city, \
+    Venue.state \
+    ) \
+        .distinct() \
+        .all()
+
+  data = []
+
+  for entry in res:
+    tmpObj = {
+      'city': entry.city,
+      'state': entry.state,
+      'venues': db.session \
+        .query( \
+          Venue.name, \
+          Venue.id, \
+          db.func.count(Show.artist_id).label('num_upcoming_shows') \
+        ) \
+        .outerjoin('shows') \
+        .filter(Venue.city == entry.city) \
+        .group_by(Venue.name, Venue.id)
+        .all()
+    }
+    data.append(tmpObj)
 
   return render_template('pages/venues.html', areas=data)
 
