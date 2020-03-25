@@ -31,6 +31,12 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
+# the relationship between Venue & Genre
+venue_genres = db.Table('venue_genres',
+    db.Column('venue_id', db.Integer, db.ForeignKey('venues.id'), primary_key=True),
+    db.Column('genre_id', db.Integer, db.ForeignKey('genres.id'), primary_key=True)
+)
+
 class Venue(db.Model):
     __tablename__ = 'venues'
 
@@ -49,6 +55,8 @@ class Venue(db.Model):
 
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean, default = False)
+
+    genres = db.relationship('Genre', secondary=venue_genres, backref=db.backref('genres', lazy=True))
 
 class Artist(db.Model):
     __tablename__ = 'artists'
@@ -76,6 +84,11 @@ class Show(db.Model):
   artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable = False)
   start_time = db.Column(db.DateTime)
 
+class Genre(db.Model):
+  __tablename__ = 'genres'
+  
+  id = db.Column(db.Integer, primary_key = True)
+  name = db.Column(db.String(300), nullable = False)
 
 #----------------------------------------------------------------------------#
 # Filters.
