@@ -55,6 +55,7 @@ class Venue(db.Model):
 
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean, default = False)
+    seeking_description = db.Column(db.String)
 
     genres = db.relationship('Genre', secondary=venue_genres, backref=db.backref('genres', lazy=True))
 
