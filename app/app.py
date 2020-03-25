@@ -47,6 +47,9 @@ class Venue(db.Model):
 
     shows = db.relationship('Show', backref='venue', lazy=True)
 
+    website = db.Column(db.String(500))
+    seeking_talent = db.Column(db.Boolean, default = False)
+
 class Artist(db.Model):
     __tablename__ = 'artists'
 
@@ -173,7 +176,7 @@ def show_venue(venue_id):
   # TODO: replace with real venue data from the venues table, using venue_id
 
   data = Venue.query.get(venue_id)
-  
+
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
