@@ -57,7 +57,12 @@ class Venue(db.Model):
     seeking_talent = db.Column(db.Boolean, default = False)
     seeking_description = db.Column(db.String)
 
-    genres = db.relationship('Genre', secondary=venue_genres, backref=db.backref('genres', lazy=True))
+    genres = db.relationship( \
+      'Genre', \
+      secondary = venue_genres, \
+      backref=db.backref('genres', lazy=True), \
+      collection_class=set \
+        )
 
 class Artist(db.Model):
     __tablename__ = 'artists'
@@ -141,6 +146,7 @@ def venues():
         ) \
         .outerjoin('shows') \
         .filter(Venue.city == entry.city) \
+        .filter(Venue.state == entry.state) \
         .group_by(Venue.name, Venue.id) \
         .all()
     }
@@ -189,13 +195,11 @@ def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
 
-  data = Venue.query.get(venue_id)
-
-  genres = Genre.query.all()
+  data = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
 
   data.venue_genres = []
 
-  for genre in genres:
+  for genre in data.genres:
     data.venue_genres.append(genre.name)
 
   return render_template('pages/show_venue.html', venue=data)
@@ -213,11 +217,35 @@ def create_venue_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
 
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  try:
+    
+    # basic venue info
+    venue = Venue (
+      name = request.form['name'],
+      city = request.form['city'],
+      state = request.form['state'],
+      address = request.form['address'],
+      phone = request.form['phone'],
+      facebook_link = request.form['facebook_link']
+    )
+
+    db.session.add(venue)
+
+    genre_names = request.form.getlist('genres')
+
+    for gname in genre_names:
+        genre = Genre(name = gname)
+        venue.genres.add(genre) ## TODO: Error: duplicates in Genre table ######################################33
+
+    db.session.commit()
+
+    # on successful db insert, flash success
+    flash('Venue ' + request.form['name'] + ' was successfully listed!')
+
+  except:
+
+    flash('An error occurred. Venue ' + data.name + ' could not be listed.')
+
   return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
