@@ -191,6 +191,13 @@ def show_venue(venue_id):
 
   data = Venue.query.get(venue_id)
 
+  genres = Genre.query.all()
+
+  data.venue_genres = []
+
+  for genre in genres:
+    data.venue_genres.append(genre.name)
+
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
