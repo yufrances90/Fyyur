@@ -13,6 +13,7 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from flask_migrate import Migrate
+import datetime
 
 #----------------------------------------------------------------------------#
 # App Config.
@@ -151,7 +152,8 @@ def venues():
         .query( \
           Venue.name, \
           Venue.id, \
-          db.func.count(Show.artist_id).label('num_upcoming_shows') \
+          db.func.count(Show.artist_id) \
+            .filter(Show.start_time > datetime.datetime.now()).label('num_upcoming_shows') \
         ) \
         .outerjoin('shows') \
         .filter(Venue.city == entry.city) \
@@ -175,7 +177,8 @@ def search_venues():
         .query( \
           Venue.name, \
           Venue.id, \
-          db.func.count(Show.artist_id).label('num_upcoming_shows') \
+          db.func.count(Show.artist_id) \
+            .filter(Show.start_time > datetime.datetime.now()).label('num_upcoming_shows') \
         ) \
         .outerjoin('shows') \
         .group_by(Venue.name, Venue.id) \
@@ -185,7 +188,8 @@ def search_venues():
       .query( \
         Venue.name, \
         Venue.id, \
-        db.func.count(Show.artist_id).label('num_upcoming_shows') \
+        db.func.count(Show.artist_id) \
+          .filter(Show.start_time > datetime.datetime.now()).label('num_upcoming_shows') \
       ) \
       .outerjoin('shows') \
       .filter(Venue.name.contains(search_term)) \
