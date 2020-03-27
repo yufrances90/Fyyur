@@ -80,6 +80,8 @@ class Artist(db.Model):
 
     shows = db.relationship('Show', backref='artist', lazy=True)
 
+    genres = db.relationship('Artist_Genre', backref='artist', lazy=True)
+
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 
 class Show(db.Model):
@@ -95,6 +97,13 @@ class Genre(db.Model):
   
   id = db.Column(db.Integer, primary_key = True)
   name = db.Column(db.String(300), nullable = False)
+
+class Artist_Genre(db.Model):
+  __tablename__ = 'artist_genres'
+
+  id = db.Column(db.Integer, primary_key=True)
+  artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable = False)
+  genre_id = db.Column(db.Integer, db.ForeignKey('genres.id'), nullable = False)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -426,10 +435,45 @@ def create_artist_submission():
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
 
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+  try:
+    
+    artist = Artist(
+      name = request.form['name'],
+      city = request.form['city'],
+      state = request.form['state'],
+      phone =  request.form['phone'],
+      facebook_link = request.form['facebook_link']
+    )
+    
+    db.session.add(artist)
+
+    genre_names = request.form.getlist('genres')
+
+    for gname in genre_names:
+      
+      target_genre = Genre.query.filter_by(name = gname).first()
+
+      if target_genre is None:
+        genre = Genre(name = gname)
+        db.session.add(genre)
+        target_genre = Genre.query.filter_by(name = gname).first()
+
+      genre_id = target_genre.id
+      artist_id = artist.id
+
+      artist_genre = Artist_Genre(artist_id = artist_id, genre_id = genre_id)
+
+      db.session.add(artist_genre)
+
+      db.session.commit()
+
+    # on successful db insert, flash success
+    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+
+  except:
+    
+    flash('An error occurred. Artist ' + request.form.name + ' could not be listed.')
+  
   return render_template('pages/home.html')
 
 
