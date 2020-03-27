@@ -215,6 +215,32 @@ def show_venue(venue_id):
   for genre in data.genres:
     data.venue_genres.append(genre.name)
 
+  data.past_shows = \
+    db.session.query( \
+      Show.artist_id, \
+      db.func.to_char(Show.start_time, 'yy-mm-dd').label('start_time'), \
+      Artist.name.label('artist_name'), \
+      Artist.image_link.label('artist_image_link') \
+     ) \
+    .join(Artist) \
+    .filter(Show.start_time < datetime.datetime.now()) \
+    .filter(Show.venue_id == venue_id).distinct().all()
+
+  data.past_shows_count = len(data.past_shows)
+
+  data.upcoming_shows = \
+    db.session.query( \
+      Show.artist_id, \
+      db.func.to_char(Show.start_time, 'yy-mm-dd').label('start_time'), \
+      Artist.name.label('artist_name'), \
+      Artist.image_link.label('artist_image_link') \
+     ) \
+    .join(Artist) \
+    .filter(Show.start_time > datetime.datetime.now()) \
+    .filter(Show.venue_id == venue_id).distinct().all()
+
+  data.upcoming_shows_count = len(data.upcoming_shows)
+
   return render_template('pages/show_venue.html', venue=data)
 
 #  Create Venue
