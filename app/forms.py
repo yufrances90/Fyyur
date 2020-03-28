@@ -241,5 +241,8 @@ class ArtistForm(Form):
     seeking_description = TextAreaField(
         'seeking_description'
     )
+    website = StringField(
+        'website', validators=[URL()]
+    )
 
 # TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
