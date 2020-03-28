@@ -269,7 +269,8 @@ def create_venue_submission():
       state = request.form['state'],
       address = request.form['address'],
       phone = request.form['phone'],
-      facebook_link = request.form['facebook_link']
+      facebook_link = request.form['facebook_link'],
+      image_link = request.form['image_link']
     )
 
     db.session.add(venue)
@@ -434,7 +435,8 @@ def create_artist_submission():
       city = request.form['city'],
       state = request.form['state'],
       phone =  request.form['phone'],
-      facebook_link = request.form['facebook_link']
+      facebook_link = request.form['facebook_link'],
+      image_link = request.form['image_link']
     )
     
     db.session.add(artist)
