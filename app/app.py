@@ -280,15 +280,21 @@ def create_venue_submission():
     genre_names = request.form.getlist('genres')
 
     for gname in genre_names:
-        genre = Genre(name = gname)
-        venue.genres.add(genre) ## TODO: Error: duplicates in Genre table ######################################33
+        genre = Genre.query.filter_by(name = gname).first()
+
+        if genre is None:
+          genre = Genre(name = gname)
+
+        venue.genres.add(genre)
 
     db.session.commit()
 
     # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
 
-  except:
+  except Exception as e:
+
+    print(e)
 
     flash('An error occurred. Venue ' + request.form.name + ' could not be listed.')
 
