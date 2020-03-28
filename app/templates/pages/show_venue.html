@@ -75,5 +75,9 @@
 	</div>
 </section>
 
+<form action="{{ url_for('delete_venue', venue_id=venue.id) }}" method="DELETE">
+    <button type="submit" class="btn btn-danger btn-lg">Delete Venue</button>
+<form>
+
 {% endblock %}
 
