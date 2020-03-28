@@ -130,6 +130,9 @@ class VenueForm(Form):
     seeking_description = TextAreaField(
         'seeking_description'
     )
+    website = StringField(
+        'website', validators=[URL()]
+    )
 
 class ArtistForm(Form):
     name = StringField(

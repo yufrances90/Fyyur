@@ -257,8 +257,6 @@ def create_venue_form():
 
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
 
   try:
     
@@ -272,7 +270,8 @@ def create_venue_submission():
       facebook_link = request.form['facebook_link'],
       image_link = request.form['image_link'],
       seeking_talent = request.form.get('seeking_talent', False, type=bool),
-      seeking_description = request.form['seeking_description']
+      seeking_description = request.form['seeking_description'],
+      website = request.form['website']
     )
 
     db.session.add(venue)
