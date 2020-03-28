@@ -312,8 +312,6 @@ def delete_venue(venue_id):
       flash('There is a show associated with this venue. Venue ' + str(venue_id) + ' could not be deleted.')
       
       return render_template('pages/home.html')
-    
-    db.session.query(Show).filter_by(venue_id = venue_id).delete()
   
     # delete venue genre association without deleteing genres
     data = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
@@ -373,7 +371,7 @@ def show_artist(artist_id):
 
   data.upcoming_shows = db.session.query( \
     Show.venue_id,
-    db.func.to_char(Show.start_time, 'yyyy-mm-dd').label('start_time'), \
+    db.func.to_char(Show.start_time, 'yyyy-mm-dd hh:mm').label('start_time'), \
     Venue.image_link.label('venue_image_link'), \
     Venue.name.label('venue_name') \
       ) \
@@ -384,7 +382,7 @@ def show_artist(artist_id):
 
   data.past_shows = db.session.query( \
     Show.venue_id,
-    db.func.to_char(Show.start_time, 'yyyy-mm-dd').label('start_time'), \
+    db.func.to_char(Show.start_time, 'yyyy-mm-dd hh:mm').label('start_time'), \
     Venue.image_link.label('venue_image_link'), \
     Venue.name.label('venue_name') \
       ) \
@@ -394,6 +392,39 @@ def show_artist(artist_id):
   data.past_shows_count = len(data.past_shows)
 
   return render_template('pages/show_artist.html', artist=data)
+
+@app.route('/artists/<int:artist_id>/delete', methods=['GET'])
+def delete_artist(artist_id):
+
+  try:
+    
+    # NO delete if there exist shows happening at this venue
+    shows = db.session.query(Show).filter_by(artist_id = artist_id).all()
+
+    if len(shows) > 0:
+
+      flash('There is a show associated with this artist. Artist ' + str(artist_id) + ' could not be deleted.')
+      
+      return render_template('pages/home.html')
+
+    # delete artist genre association without deleteing genres
+    db.session.query(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).delete()
+
+    # delete basic artist info
+    db.session.query(Artist).filter(Artist.id == artist_id).delete()
+
+    db.session.commit()
+
+    # on successful db insert, flash success
+    flash('Artist with ID: ' + str(artist_id) + ' was successfully deleted!')
+
+  except Exception as e:
+    
+    print(e)
+
+    flash('An error occurred. Venue ' + str(artist_id) + ' could not be deleted.')
+
+  return render_template('pages/home.html')
 
 #  Update
 #  ----------------------------------------------------------------
