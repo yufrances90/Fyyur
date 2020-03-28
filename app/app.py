@@ -270,7 +270,9 @@ def create_venue_submission():
       address = request.form['address'],
       phone = request.form['phone'],
       facebook_link = request.form['facebook_link'],
-      image_link = request.form['image_link']
+      image_link = request.form['image_link'],
+      seeking_talent = request.form.get('seeking_talent', False, type=bool),
+      seeking_description = request.form['seeking_description']
     )
 
     db.session.add(venue)
@@ -436,7 +438,9 @@ def create_artist_submission():
       state = request.form['state'],
       phone =  request.form['phone'],
       facebook_link = request.form['facebook_link'],
-      image_link = request.form['image_link']
+      image_link = request.form['image_link'],
+      seeking_venue = request.form.get('seeking_venue', False, type=bool),
+      seeking_description = request.form['seeking_description']
     )
     
     db.session.add(artist)
