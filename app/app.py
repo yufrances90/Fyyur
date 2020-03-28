@@ -222,7 +222,7 @@ def show_venue(venue_id):
   data.past_shows = \
     db.session.query( \
       Show.artist_id, \
-      db.func.to_char(Show.start_time, 'yy-mm-dd').label('start_time'), \
+      db.func.to_char(Show.start_time, 'yyyy-mm-dd hh:mm').label('start_time'), \
       Artist.name.label('artist_name'), \
       Artist.image_link.label('artist_image_link') \
      ) \
@@ -235,7 +235,7 @@ def show_venue(venue_id):
   data.upcoming_shows = \
     db.session.query( \
       Show.artist_id, \
-      db.func.to_char(Show.start_time, 'yy-mm-dd').label('start_time'), \
+      db.func.to_char(Show.start_time, 'yyyy-mm-dd hh:mm').label('start_time'), \
       Artist.name.label('artist_name'), \
       Artist.image_link.label('artist_image_link') \
      ) \
@@ -303,8 +303,16 @@ def create_venue_submission():
 def delete_venue(venue_id):
 
   try:
+
+    # NO delete if there exist shows happening at this venue
+    shows = db.session.query(Show).filter_by(venue_id = venue_id).all()
+
+    if len(shows) > 0:
+
+      flash('There is a show associated with this venue. Venue ' + str(venue_id) + ' could not be deleted.')
+      
+      return render_template('pages/home.html')
     
-    # delete related shows
     db.session.query(Show).filter_by(venue_id = venue_id).delete()
   
     # delete venue genre association without deleteing genres
@@ -452,8 +460,6 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
 
   try:
     
@@ -535,7 +541,7 @@ def create_show_submission():
     show = Show(
       artist_id = request.form['artist_id'],
       venue_id = request.form['venue_id'],
-      start_time = request.form['start_time']
+      start_time = datetime.datetime.strptime(request.form['start_time'], '%Y-%m-%d %H:%M:%S')
     )
 
     db.session.add(show)
