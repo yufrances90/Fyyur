@@ -478,8 +478,38 @@ def edit_venue(venue_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
-  # TODO: take values from the form submitted, and update existing
-  # venue record with ID <venue_id> using the new attributes
+
+  # update basic venue info
+  db.session.query(Venue).filter(Venue.id == venue_id).update({
+    'name': request.form['name'],
+    'city': request.form['city'],
+    'state': request.form['state'],
+    'address': request.form['address'],
+    'phone': request.form['phone'],
+    'facebook_link': request.form['facebook_link'], 
+    'image_link': request.form['image_link'], 
+    'website': request.form['website'],
+    'seeking_description': request.form['seeking_description'],
+    'seeking_talent': request.form.get('seeking_talent', False, type=bool)
+  })
+
+  # update genres associated with the selected venue
+  saved_venue = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
+
+  saved_venue.genres.clear()
+
+  genre_names = request.form.getlist('genres')
+
+  for gname in genre_names:
+        genre = Genre.query.filter_by(name = gname).first()
+
+        if genre is None:
+          genre = Genre(name = gname)
+
+        saved_venue.genres.add(genre)
+
+  db.session.commit()
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
