@@ -300,7 +300,13 @@ def create_venue_submission():
 
     print(e)
 
+    db.session.rollback()
+
     flash('An error occurred. Venue ' + request.form.name + ' could not be listed.')
+
+  finally:
+
+    db.session.close()
 
   return index()
 
@@ -335,7 +341,13 @@ def delete_venue(venue_id):
 
     print(e)
 
+    db.session.rollback()
+
     flash('An error occurred. Venue ' + str(venue_id) + ' could not be deleted.')
+  
+  finally:
+
+    db.session.close()
   
   return index()
 
@@ -428,7 +440,13 @@ def delete_artist(artist_id):
     
     print(e)
 
+    db.session.rollback()
+
     flash('An error occurred. Venue ' + str(artist_id) + ' could not be deleted.')
+
+  finally:
+
+    db.session.close()
 
   return index()
 
@@ -460,41 +478,53 @@ def edit_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
 
-  # update basic artist info
-  db.session.query(Artist).filter(Artist.id == artist_id).update({
-    'name': request.form['name'],
-    'city': request.form['city'],
-    'state': request.form['state'],
-    'phone': request.form['phone'],
-    'facebook_link': request.form['facebook_link'], 
-    'image_link': request.form['image_link'], 
-    'website': request.form['website'],
-    'seeking_description': request.form['seeking_description'],
-    'seeking_venue': request.form.get('seeking_venue', False, type=bool)
-  })
+  try:
 
-  db.session.query(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).delete()
+    # update basic artist info
+    db.session.query(Artist).filter(Artist.id == artist_id).update({
+      'name': request.form['name'],
+      'city': request.form['city'],
+      'state': request.form['state'],
+      'phone': request.form['phone'],
+      'facebook_link': request.form['facebook_link'], 
+      'image_link': request.form['image_link'], 
+      'website': request.form['website'],
+      'seeking_description': request.form['seeking_description'],
+      'seeking_venue': request.form.get('seeking_venue', False, type=bool)
+    })
 
-  # update genres 
-  genre_names = request.form.getlist('genres')
+    db.session.query(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).delete()
 
-  for gname in genre_names:
+    # update genres 
+    genre_names = request.form.getlist('genres')
+
+    for gname in genre_names:
     
-    target_genre = Genre.query.filter_by(name = gname).first()
-
-    if target_genre is None:
-      genre = Genre(name = gname)
-      db.session.add(genre)
       target_genre = Genre.query.filter_by(name = gname).first()
 
-    genre_id = target_genre.id
+      if target_genre is None:
+        genre = Genre(name = gname)
+        db.session.add(genre)
+        target_genre = Genre.query.filter_by(name = gname).first()
 
-    artist_genre = Artist_Genre(artist_id = artist_id, genre_id = genre_id)
+      genre_id = target_genre.id
 
-    db.session.add(artist_genre)
+      artist_genre = Artist_Genre(artist_id = artist_id, genre_id = genre_id)
+
+      db.session.add(artist_genre)
+
+      db.session.commit()
 
 
-  db.session.commit()
+  except Exception as e:
+
+    print(e)
+
+    db.session.rollback()
+
+  finally:
+
+    db.session.close()
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
@@ -517,42 +547,53 @@ def edit_venue(venue_id):
 
   form.process()
 
-  # TODO: populate form with values from venue with ID <venue_id>
   return render_template('forms/edit_venue.html', form=form, venue=data)
 
 @app.route('/venues/<int:venue_id>/edit', methods=['POST'])
 def edit_venue_submission(venue_id):
 
-  # update basic venue info
-  db.session.query(Venue).filter(Venue.id == venue_id).update({
-    'name': request.form['name'],
-    'city': request.form['city'],
-    'state': request.form['state'],
-    'address': request.form['address'],
-    'phone': request.form['phone'],
-    'facebook_link': request.form['facebook_link'], 
-    'image_link': request.form['image_link'], 
-    'website': request.form['website'],
-    'seeking_description': request.form['seeking_description'],
-    'seeking_talent': request.form.get('seeking_talent', False, type=bool)
-  })
+  try:
+    
+    # update basic venue info
+    db.session.query(Venue).filter(Venue.id == venue_id).update({
+      'name': request.form['name'],
+      'city': request.form['city'],
+      'state': request.form['state'],
+      'address': request.form['address'],
+      'phone': request.form['phone'],
+      'facebook_link': request.form['facebook_link'], 
+      'image_link': request.form['image_link'], 
+      'website': request.form['website'],
+      'seeking_description': request.form['seeking_description'],
+      'seeking_talent': request.form.get('seeking_talent', False, type=bool)
+    })
 
-  # update genres associated with the selected venue
-  saved_venue = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
+    # update genres associated with the selected venue
+    saved_venue = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
 
-  saved_venue.genres.clear()
+    saved_venue.genres.clear()
 
-  genre_names = request.form.getlist('genres')
+    genre_names = request.form.getlist('genres')
 
-  for gname in genre_names:
-        genre = Genre.query.filter_by(name = gname).first()
+    for gname in genre_names:
+      genre = Genre.query.filter_by(name = gname).first()
 
-        if genre is None:
-          genre = Genre(name = gname)
+      if genre is None:
+        genre = Genre(name = gname)
 
-        saved_venue.genres.add(genre)
+      saved_venue.genres.add(genre)
 
-  db.session.commit()
+    db.session.commit()
+
+  except Exception as e:
+
+    print(e)
+
+    db.session.rollback()
+
+  finally:
+    
+    db.session.close()
 
   return redirect(url_for('show_venue', venue_id=venue_id))
 
@@ -608,9 +649,17 @@ def create_artist_submission():
     # on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
 
-  except:
+  except Exception as e:
+
+    print(e)
+
+    db.session.rollback()
     
     flash('An error occurred. Artist ' + request.form.name + ' could not be listed.')
+
+  finally:
+
+    db.session.close()
   
   return index()
 
@@ -659,9 +708,17 @@ def create_show_submission():
     # on successful db insert, flash success
     flash('Show was successfully listed!')
 
-  except:
+  except Exception as e:
+
+    print(e)
+
+    db.session.rollback()
 
     flash('An error occurred. Show could not be listed.')
+
+  finally:
+
+    db.session.close()
 
   return index()
 
