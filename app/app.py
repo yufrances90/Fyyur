@@ -130,7 +130,12 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  return render_template('pages/home.html')
+
+  venues = Venue.query.limit(10).all()
+
+  artists = Artist.query.limit(10).all()
+
+  return render_template('pages/home.html', venues=venues, artists=artists)
 
 
 #  Venues
@@ -209,8 +214,6 @@ def search_venues():
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  # TODO: replace with real venue data from the venues table, using venue_id
 
   data = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
 
@@ -297,7 +300,7 @@ def create_venue_submission():
 
     flash('An error occurred. Venue ' + request.form.name + ' could not be listed.')
 
-  return render_template('pages/home.html')
+  return index()
 
 @app.route('/venues/<int:venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
@@ -311,7 +314,7 @@ def delete_venue(venue_id):
 
       flash('There is a show associated with this venue. Venue ' + str(venue_id) + ' could not be deleted.')
       
-      return render_template('pages/home.html')
+      return index()
   
     # delete venue genre association without deleteing genres
     data = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
@@ -332,7 +335,7 @@ def delete_venue(venue_id):
 
     flash('An error occurred. Venue ' + str(venue_id) + ' could not be deleted.')
   
-  return render_template('pages/home.html')
+  return index()
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -405,7 +408,7 @@ def delete_artist(artist_id):
 
       flash('There is a show associated with this artist. Artist ' + str(artist_id) + ' could not be deleted.')
       
-      return render_template('pages/home.html')
+      return index()
 
     # delete artist genre association without deleteing genres
     db.session.query(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).delete()
@@ -424,7 +427,7 @@ def delete_artist(artist_id):
 
     flash('An error occurred. Venue ' + str(artist_id) + ' could not be deleted.')
 
-  return render_template('pages/home.html')
+  return index()
 
 #  Update
 #  ----------------------------------------------------------------
@@ -605,7 +608,7 @@ def create_artist_submission():
     
     flash('An error occurred. Artist ' + request.form.name + ' could not be listed.')
   
-  return render_template('pages/home.html')
+  return index()
 
 
 #  Shows
@@ -656,7 +659,7 @@ def create_show_submission():
 
     flash('An error occurred. Show could not be listed.')
 
-  return render_template('pages/home.html')
+  return index()
 
 @app.errorhandler(404)
 def not_found_error(error):
