@@ -202,7 +202,7 @@ def search_venues():
           .filter(Show.start_time > datetime.datetime.now()).label('num_upcoming_shows') \
       ) \
       .outerjoin('shows') \
-      .filter(Venue.name.contains(search_term)) \
+      .filter(Venue.name.ilike('%{}%'.format(search_term))) \
       .group_by(Venue.name, Venue.id) \
       .all()
 
@@ -353,7 +353,8 @@ def search_artists():
   
   search_term = request.form.get('search_term', '')
 
-  res = Artist.query.all() if search_term == '' else Artist.query.filter(Artist.name.contains(search_term)).all()
+  res = Artist.query.all() if search_term == '' \
+    else Artist.query.filter(Artist.name.ilike('%{}%'.format(search_term))).all()
 
   response={
     "count": len(res),
