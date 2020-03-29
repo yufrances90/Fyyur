@@ -456,7 +456,7 @@ def edit_artist_submission(artist_id):
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
 def edit_venue(venue_id):
-  
+
   form = VenueForm()
 
   data = db.session.query(Venue).join(Genre, Venue.genres).filter(Venue.id == venue_id).first()
@@ -468,6 +468,8 @@ def edit_venue(venue_id):
 
   form.state.default = data.state
   form.genres.default = data.venue_genres
+  form.seeking_talent.default = data.seeking_talent
+  form.seeking_description.default = data.seeking_description
 
   form.process()
 
