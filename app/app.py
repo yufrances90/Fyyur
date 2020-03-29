@@ -620,7 +620,7 @@ def shows():
     Show.artist_id,
     Artist.name.label('artist_name'),
     Artist.image_link.label('artist_image_link'), \
-    Show.start_time \
+    db.func.to_char(Show.start_time, 'yyyy-mm-dd hh:mm').label('start_time') \
   ) \
   .join(Venue, Venue.id == Show.venue_id) \
   .join(Artist, Artist.id == Show.artist_id) \
