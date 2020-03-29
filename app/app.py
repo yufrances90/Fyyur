@@ -430,22 +430,26 @@ def delete_artist(artist_id):
 #  ----------------------------------------------------------------
 @app.route('/artists/<int:artist_id>/edit', methods=['GET'])
 def edit_artist(artist_id):
+
   form = ArtistForm()
-  artist={
-    "id": 4,
-    "name": "Guns N Petals",
-    "genres": ["Rock n Roll"],
-    "city": "San Francisco",
-    "state": "CA",
-    "phone": "326-123-5000",
-    "website": "https://www.gunsnpetalsband.com",
-    "facebook_link": "https://www.facebook.com/GunsNPetals",
-    "seeking_venue": True,
-    "seeking_description": "Looking for shows to perform at in the San Francisco Bay Area!",
-    "image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80"
-  }
-  # TODO: populate form with fields from artist with ID <artist_id>
-  return render_template('forms/edit_artist.html', form=form, artist=artist)
+
+  data = Artist.query.get(artist_id)
+
+  genres = db.session.query(Genre).join(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).all()
+
+  data.artist_genres = []
+
+  for genre in genres:
+    data.artist_genres.append(genre.name)
+
+  form.state.default = data.state
+  form.genres.default = data.artist_genres
+  form.seeking_venue.default = data.seeking_venue
+  form.seeking_description.default = data.seeking_description
+
+  form.process()
+
+  return render_template('forms/edit_artist.html', form=form, artist=data)
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
