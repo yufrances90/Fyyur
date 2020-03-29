@@ -453,8 +453,42 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
+
+  # update basic artist info
+  db.session.query(Artist).filter(Artist.id == artist_id).update({
+    'name': request.form['name'],
+    'city': request.form['city'],
+    'state': request.form['state'],
+    'phone': request.form['phone'],
+    'facebook_link': request.form['facebook_link'], 
+    'image_link': request.form['image_link'], 
+    'website': request.form['website'],
+    'seeking_description': request.form['seeking_description'],
+    'seeking_venue': request.form.get('seeking_venue', False, type=bool)
+  })
+
+  db.session.query(Artist_Genre).filter(Artist_Genre.artist_id == artist_id).delete()
+
+  # update genres 
+  genre_names = request.form.getlist('genres')
+
+  for gname in genre_names:
+    
+    target_genre = Genre.query.filter_by(name = gname).first()
+
+    if target_genre is None:
+      genre = Genre(name = gname)
+      db.session.add(genre)
+      target_genre = Genre.query.filter_by(name = gname).first()
+
+    genre_id = target_genre.id
+
+    artist_genre = Artist_Genre(artist_id = artist_id, genre_id = genre_id)
+
+    db.session.add(artist_genre)
+
+
+  db.session.commit()
 
   return redirect(url_for('show_artist', artist_id=artist_id))
 
